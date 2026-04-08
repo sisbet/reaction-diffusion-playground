@@ -7,11 +7,18 @@
 import * as THREE from "three";
 
 import parameterValues from "./parameterValues";
-import { displayUniforms, passthroughUniforms } from "./uniforms";
-import { displayMaterial, passthroughMaterial } from "./materials";
+import globals from "./globals";
+import { displayUniforms, passthroughUniforms, simulationUniforms } from "./uniforms";
+import {
+  displayMaterial,
+  passthroughMaterial,
+  maskInjectMaterial,
+  simulationMaterial,
+} from "./materials";
 
 let bufferImage, bufferCanvasCtx;
 let maskCanvas, maskCtx;
+let maskCanvasTexture = null;
 
 export const InitialTextureTypes = {
   CIRCLE: 0,
@@ -22,6 +29,8 @@ export const InitialTextureTypes = {
 };
 
 export function drawFirstFrame(type = InitialTextureTypes.CIRCLE) {
+  globals.pendingMaskInject = false;
+
   // Grab the invisible canvas context that we can draw initial image data into
   global.bufferCanvas = document.querySelector("#buffer-canvas");
   bufferCanvasCtx = bufferCanvas.getContext("2d");
@@ -137,8 +146,51 @@ export function drawFirstFrame(type = InitialTextureTypes.CIRCLE) {
         parameterValues.canvas.height,
       );
       renderInitialDataToRenderTargets(convertPixelsToTextureData());
+      globals.pendingMaskInject = !!parameterValues.mask.enabled;
       break;
   }
+}
+
+/** Empty clear leaves blue=0; first paint runs this pass (copy A/B, set blue from HELLO) — no RD. */
+export function injectObstacleMaskIntoSimulation() {
+  setupMaskCanvas();
+  drawObstacleTextMask();
+  const tex = ensureMaskCanvasTexture();
+  maskInjectMaterial.uniforms.maskTexture.value = tex;
+
+  const src = globals.currentRenderTargetIndex;
+  const dst = 1 - src;
+
+  displayMesh.material = maskInjectMaterial;
+  renderer.setRenderTarget(renderTargets[dst]);
+  renderer.render(scene, camera);
+
+  globals.currentRenderTargetIndex = dst;
+  simulationUniforms.previousIterationTexture.value = renderTargets[dst].texture;
+  displayUniforms.textureToDisplay.value = renderTargets[dst].texture;
+  displayUniforms.previousIterationTexture.value = renderTargets[src].texture;
+
+  displayMesh.material = simulationMaterial;
+  renderer.setRenderTarget(null);
+}
+
+function ensureMaskCanvasTexture() {
+  const w = parameterValues.canvas.width;
+  const h = parameterValues.canvas.height;
+  if (
+    maskCanvasTexture &&
+    maskCanvasTexture.image.width === w &&
+    maskCanvasTexture.image.height === h
+  ) {
+    maskCanvasTexture.needsUpdate = true;
+    return maskCanvasTexture;
+  }
+  if (maskCanvasTexture) maskCanvasTexture.dispose();
+  maskCanvasTexture = new THREE.CanvasTexture(maskCanvas);
+  maskCanvasTexture.minFilter = THREE.LinearFilter;
+  maskCanvasTexture.magFilter = THREE.LinearFilter;
+  maskCanvasTexture.flipY = true;
+  return maskCanvasTexture;
 }
 
 function setupMaskCanvas() {
@@ -183,12 +235,6 @@ function drawTextMask({
   maskCtx.fillText(text, x, y);
   maskCtx.restore();
 }
-// Returns 0..1 mask value for each pixel index i in RGBA array
-function getMaskValueAt(maskPixels, i) {
-  // using red channel; white text => 255 => 1.0
-  return maskPixels[i] / 255;
-}
-
 function renderInitialDataToRenderTargets(initialData) {
   // Put the initial data into a texture format that ThreeJS can pass into the render targets
   let texture = new THREE.DataTexture(

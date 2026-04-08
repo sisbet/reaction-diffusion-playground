@@ -16,6 +16,7 @@ import displayFragShader from '../glsl/displayFrag.glsl';
 import displayVertShader from '../glsl/displayVert.glsl';
 import passthroughVertShader from '../glsl/passthroughVert.glsl';
 import passthroughFragShader from '../glsl/passthroughFrag.glsl';
+import maskInjectFragShader from '../glsl/maskInjectFrag.glsl';
 
 import { simulationUniforms, displayUniforms, passthroughUniforms } from './uniforms';
 
@@ -60,3 +61,14 @@ export const passthroughMaterial = new THREE.ShaderMaterial({
   fragmentShader: passthroughFragShader,
 });
 passthroughMaterial.blending = THREE.NoBlending;
+
+/** RD pass shares `previousIterationTexture` with sim; only adds `maskTexture`. */
+export const maskInjectMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    previousIterationTexture: simulationUniforms.previousIterationTexture,
+    maskTexture: { value: null },
+  },
+  vertexShader: passthroughVertShader,
+  fragmentShader: maskInjectFragShader,
+});
+maskInjectMaterial.blending = THREE.NoBlending;

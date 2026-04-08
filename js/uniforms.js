@@ -6,88 +6,100 @@
 //  - See https://threejs.org/docs/index.html#api/en/core/Uniform
 //==============================================================
 
-import * as THREE from 'three';
-import parameterValues from './parameterValues';
+import * as THREE from "three";
+import parameterValues from "./parameterValues";
 
 export let simulationUniforms = {
   previousIterationTexture: {
     type: "t",
-    value: undefined
+    value: undefined,
   },
   resolution: {
     type: "v2",
-    value: new THREE.Vector2(parameterValues.canvas.width, parameterValues.canvas.height)
+    value: new THREE.Vector2(
+      parameterValues.canvas.width,
+      parameterValues.canvas.height,
+    ),
   },
   mousePosition: {
     type: "v2",
-    value: new THREE.Vector2(-1,-1)
+    value: new THREE.Vector2(-1, -1),
   },
   brushRadius: {
     type: "f",
-    value: 10.0
+    value: 10.0,
   },
   styleMapTexture: {
     type: "t",
-    value: undefined
+    value: undefined,
   },
   styleMapResolution: {
     type: "vec2",
-    value: new THREE.Vector2(-1,-1)
+    value: new THREE.Vector2(-1, -1),
   },
   styleMapTransforms: {
     type: "v4",
-    value: new THREE.Vector4(1.0, 0.0, 0.0, 0.0)  // {scale, rotation, xOffset, yOffset}
+    value: new THREE.Vector4(1.0, 0.0, 0.0, 0.0), // {scale, rotation, xOffset, yOffset}
   },
   styleMapParameters: {
     type: "v4",
-    value: new THREE.Vector4(parameterValues.f, parameterValues.k, parameterValues.dA, parameterValues.dB)
+    value: new THREE.Vector4(
+      parameterValues.f,
+      parameterValues.k,
+      parameterValues.dA,
+      parameterValues.dB,
+    ),
   },
   bias: {
-    type: 'vec2',
-    value: new THREE.Vector2(parameterValues.bias.x, parameterValues.bias.y)
+    type: "vec2",
+    value: new THREE.Vector2(parameterValues.bias.x, parameterValues.bias.y),
   },
 
   // Reaction-diffusion equation parameters
-  f: {   // feed rate
+  f: {
+    // feed rate
     type: "f",
-    value: parameterValues.f
+    value: parameterValues.f,
   },
-  k: {   // kill rate
+  k: {
+    // kill rate
     type: "f",
-    value: parameterValues.k
+    value: parameterValues.k,
   },
-  dA: {  // diffusion rate for chemical A
+  dA: {
+    // diffusion rate for chemical A
     type: "f",
-    value: parameterValues.dA
+    value: parameterValues.dA,
   },
-  dB: {  // diffusion rate for chemical B
+  dB: {
+    // diffusion rate for chemical B
     type: "f",
-    value: parameterValues.dB
+    value: parameterValues.dB,
   },
   timestep: {
     type: "f",
-    value: parameterValues.timestep
+    value: parameterValues.timestep,
   },
   maskEnabled: {
     type: "f",
-    value: parameterValues.mask.enabled ? 1.0 : 0.0
-  }
+    value: parameterValues.mask.enabled ? 1.0 : 0.0,
+  },
 };
 
 export let displayUniforms = {
   textureToDisplay: {
-    value: null
+    value: null,
   },
   previousIterationTexture: {
-    value: null
+    value: null,
   },
   time: {
     type: "f",
-    value: 0
+    value: 0,
   },
   renderingStyle: {
     type: "i",
-    value: 0
+    value: 0,
   },
 
   // Gradient color stops - RGB channels represent real color values, but A channel is for B threshold
@@ -95,76 +107,76 @@ export let displayUniforms = {
   colorStop1: {
     type: "v4",
     value: new THREE.Vector4(
-      parameterValues.gradientColors.color1RGB.r/255,
-      parameterValues.gradientColors.color1RGB.g/255,
-      parameterValues.gradientColors.color1RGB.b/255,
-      parameterValues.gradientColors.color1Stop
-    )
+      parameterValues.gradientColors.color1RGB.r / 255,
+      parameterValues.gradientColors.color1RGB.g / 255,
+      parameterValues.gradientColors.color1RGB.b / 255,
+      parameterValues.gradientColors.color1Stop,
+    ),
   },
   colorStop2: {
     type: "v4",
     value: new THREE.Vector4(
-      parameterValues.gradientColors.color2RGB.r/255,
-      parameterValues.gradientColors.color2RGB.g/255,
-      parameterValues.gradientColors.color2RGB.b/255,
-      parameterValues.gradientColors.color2Stop
-    )
+      parameterValues.gradientColors.color2RGB.r / 255,
+      parameterValues.gradientColors.color2RGB.g / 255,
+      parameterValues.gradientColors.color2RGB.b / 255,
+      parameterValues.gradientColors.color2Stop,
+    ),
   },
   colorStop3: {
     type: "v4",
     value: new THREE.Vector4(
-      parameterValues.gradientColors.color3RGB.r/255,
-      parameterValues.gradientColors.color3RGB.g/255,
-      parameterValues.gradientColors.color3RGB.b/255,
-      parameterValues.gradientColors.color3Stop
-    )
+      parameterValues.gradientColors.color3RGB.r / 255,
+      parameterValues.gradientColors.color3RGB.g / 255,
+      parameterValues.gradientColors.color3RGB.b / 255,
+      parameterValues.gradientColors.color3Stop,
+    ),
   },
   colorStop4: {
     type: "v4",
     value: new THREE.Vector4(
-      parameterValues.gradientColors.color4RGB.r/255,
-      parameterValues.gradientColors.color4RGB.g/255,
-      parameterValues.gradientColors.color4RGB.b/255,
-      parameterValues.gradientColors.color4Stop
-    )
+      parameterValues.gradientColors.color4RGB.r / 255,
+      parameterValues.gradientColors.color4RGB.g / 255,
+      parameterValues.gradientColors.color4RGB.b / 255,
+      parameterValues.gradientColors.color4Stop,
+    ),
   },
   colorStop5: {
     type: "v4",
     value: new THREE.Vector4(
-      parameterValues.gradientColors.color5RGB.r/255,
-      parameterValues.gradientColors.color5RGB.g/255,
-      parameterValues.gradientColors.color5RGB.b/255,
-      parameterValues.gradientColors.color5Stop
-    )
+      parameterValues.gradientColors.color5RGB.r / 255,
+      parameterValues.gradientColors.color5RGB.g / 255,
+      parameterValues.gradientColors.color5RGB.b / 255,
+      parameterValues.gradientColors.color5Stop,
+    ),
   },
 
   // HSL mapping
   hslFrom: {
-    type: 'vec2',
+    type: "vec2",
     value: new THREE.Vector2(
       parameterValues.hsl.from.min,
-      parameterValues.hsl.from.max
-    )
+      parameterValues.hsl.from.max,
+    ),
   },
   hslTo: {
-    type: 'vec2',
+    type: "vec2",
     value: new THREE.Vector2(
       parameterValues.hsl.to.min,
-      parameterValues.hsl.to.max
-    )
+      parameterValues.hsl.to.max,
+    ),
   },
   hslSaturation: {
-    type: 'f',
-    value: parameterValues.hsl.saturation
+    type: "f",
+    value: parameterValues.hsl.saturation,
   },
   hslLuminosity: {
-    type: 'f',
-    value: parameterValues.hsl.luminosity
-  }
+    type: "f",
+    value: parameterValues.hsl.luminosity,
+  },
 };
 
 export let passthroughUniforms = {
   textureToDisplay: {
-    value: null
-  }
+    value: null,
+  },
 };

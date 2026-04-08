@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { drawFirstFrame } from './js/firstFrame';
+import { drawFirstFrame, injectObstacleMaskIntoSimulation } from './js/firstFrame';
 import { setupRenderTargets } from './js/renderTargets';
 import { setupStats, updateStats } from './js/stats';
 import { setupUI } from './js/ui';
@@ -87,6 +87,14 @@ function setupEnvironment() {
 //==============================================================
 function update() {
   if(!globals.isPaused) {
+    if (
+      globals.pendingMaskInject &&
+      simulationUniforms.mousePosition.value.x >= 0
+    ) {
+      if (parameterValues.mask.enabled) injectObstacleMaskIntoSimulation();
+      globals.pendingMaskInject = false;
+    }
+
     // Activate the simulation shaders
     displayMesh.material = simulationMaterial;
 

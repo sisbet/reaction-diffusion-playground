@@ -24,6 +24,8 @@ export function setupMouse() {
   canvas.addEventListener('mousedown', (e) => {
     mouseDown = true;
     mouseFollower.style.backgroundColor = 'rgba(255,255,255,.2)';
+    simulationUniforms.mousePosition.value.x = e.offsetX / parameterValues.canvas.width;
+    simulationUniforms.mousePosition.value.y = 1 - e.offsetY / parameterValues.canvas.height;
   });
 
   // End drag, make indicator circle transparent
