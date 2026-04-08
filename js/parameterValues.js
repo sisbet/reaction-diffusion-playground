@@ -99,5 +99,11 @@ export default {
   bias: {
     x: parameterMetadata.bias.x.initial,
     y: parameterMetadata.bias.y.initial
+  },
+
+  mask: {
+    enabled: true,
+    text: 'HELLO',
+    textSize: 140
   }
 };

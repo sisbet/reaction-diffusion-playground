@@ -67,6 +67,10 @@ export let simulationUniforms = {
   timestep: {
     type: "f",
     value: parameterValues.timestep
+  },
+  maskEnabled: {
+    type: "f",
+    value: parameterValues.mask.enabled ? 1.0 : 0.0
   }
 };
 

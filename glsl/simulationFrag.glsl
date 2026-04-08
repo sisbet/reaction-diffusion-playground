@@ -1,6 +1,8 @@
 /**
 - Red channel = concentration of chemical A (0.0 - 1.0)
 - Green channel = concentration of chemical B (0.0 - 1.0)
+- Blue channel = obstacle mask (0 = free, 1 = wall); set in firstFrame.js.
+  Soft avoid: edges can be anti-aliased; shader blends physics toward empty state by mask.
 */
 
 uniform sampler2D previousIterationTexture;
@@ -22,6 +24,9 @@ uniform vec2 styleMapResolution;
 uniform vec2 bias;
 
 uniform vec2 resolution;
+
+// 1.0 = obstacle mask affects simulation; 0.0 = ignore blue channel mask
+uniform float maskEnabled;
 
 varying vec2 v_uvs[9];
 
@@ -100,10 +105,13 @@ vec4 getStyleMapTexel(vec2 uv) {
 }
 
 void main() {
-  // Get A/B chemical data
+  // Get A/B chemical data and obstacle mask (blue)
   vec4 centerTexel = texture2D(previousIterationTexture, v_uvs[0]);
   float A = centerTexel[0];
   float B = centerTexel[1];
+  float mask = centerTexel.b;
+  // Soft wall strength 0..1 (anti-aliased mask = smooth transition at edges)
+  float w = clamp(mask, 0.0, 1.0) * maskEnabled;
 
   // Copy the f/k/dA/dB parameters so they can be modified locally ("n" for "new")
   float nf = f;
@@ -128,7 +136,13 @@ void main() {
     float distToMouse = distance(mousePosition * resolution, v_uvs[0] * resolution);
 
     if(distToMouse < brushRadius) {
-      gl_FragColor = vec4(mix(0.0, 0.3, distToMouse/brushRadius), 0.5, 0.0, 1.0);
+      // Less B paint where mask is strong when mask is enabled; else full brush
+      float brushB = mix(
+        0.5,
+        0.5 * (1.0 - smoothstep(0.35, 1.0, mask)),
+        maskEnabled
+      );
+      gl_FragColor = vec4(mix(0.0, 0.3, distToMouse/brushRadius), brushB, mask, 1.0);
       return;
     }
   }
@@ -139,12 +153,18 @@ void main() {
 
   // Pre-calculate complex and repeated terms
   vec2 laplacian = getLaplacian(centerTexel);
-  float reactionTerm = A * B * B;
+  // Suppress reaction inside / near obstacles (organic deflection)
+  float reactionTerm = A * B * B * (1.0 - w);
+  // Slightly damp diffusion of B toward walls (patterns bend rather than cut)
+  float dampA = 1.0 - 0.2 * w;
+  float dampB = 1.0 - 0.55 * w;
 
-  gl_FragColor = vec4(
-    A + ((ndA * laplacian[0] - reactionTerm + nf * (1.0 - A)) * timestep),
-    B + ((ndB * laplacian[1] + reactionTerm - (nk + nf) * B) * timestep),
-    centerTexel.b,
-    1.0
-  );
+  float An = A + ((ndA * laplacian[0] * dampA - reactionTerm + nf * (1.0 - A)) * timestep);
+  float Bn = B + ((ndB * laplacian[1] * dampB + reactionTerm - (nk + nf) * B) * timestep);
+
+  // Relax toward empty obstacle state (A=1, B=0); strength follows soft mask
+  An = mix(An, 1.0, w);
+  Bn = mix(Bn, 0.0, w);
+
+  gl_FragColor = vec4(An, Bn, centerTexel.b, 1.0);
 }
